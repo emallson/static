@@ -46,7 +46,7 @@
                            "-batch" "-eval"
                            (str
                             "(progn "
-                            (apply str (map second (:emacs-eval (config))))
+                            (apply str (:emacs-eval (config)))
                             " (find-file \"" (.getAbsolutePath file) "\") "
                             (:org-export-command (config))
                             ")"))))]
