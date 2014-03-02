@@ -219,12 +219,8 @@
   "Render a post for display in index pages."
   [f]
   (let [[metadata content] (read-doc f)]
-    [:div [:h2 [:a {:href (post-url f)} (:title metadata)]]
-     [:p {:class "publish_date"}  
-      (parse-date "yyyy-MM-dd" "dd MMM yyyy" 
-                  (re-find #"\d*-\d*-\d*" 
-                           (FilenameUtils/getBaseName (str f))))]
-     [:p @content]]))
+    (template [(merge {:template (:snippet-template (config))} metadata)
+               content])))
 
 (defn create-latest-posts 
   "Create and write latest post pages."
@@ -241,7 +237,7 @@
        (str "latest-posts/" page "/index.html")
        (template
             [{:title (:site-title (config))
-          :description (:site-description (config))
+              :description (:site-description (config))
               :template (:default-template (config))}
              (html (list (map #(snippet %) posts) (pager page max-index posts-per-page)))])))))
 
