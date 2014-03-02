@@ -100,6 +100,21 @@
 ;; Create RSS Feed.
 ;;
 
+(defn find-pub-date
+  "Finds the publication date of a file.
+
+  For Org files, #+DATE is checked first. Failing that, the file name is
+  checked. Other file types only have their file name checked.
+
+  Finally, if no date is found an exception is thrown."
+  [filename metadata]
+  (let [extension (FilenameUtils/getExtension filename)]
+    (cond
+     (and (= extension "org")
+          (not (nil? (:date metadata)))) (re-find #"\d*-\d*-\d*" (:date metadata))
+     :else (re-find #"\d*-\d*-\d*" 
+                    filename))))
+
 (defn post-xml
   "Create RSS item node."
   [file]
@@ -108,8 +123,7 @@
      [:title (escape-html (:title metadata))]
      [:link  (str (URL. (URL. (:site-url (config))) (post-url file)))]
      [:pubDate (parse-date "yyyy-MM-dd" "E, d MMM yyyy HH:mm:ss Z"
-                           (re-find #"\d*-\d*-\d*" 
-                                    (FilenameUtils/getBaseName (str file))))]
+                           (find-pub-date (str file) metadata))]
      [:description (escape-html @content)]]))
 
 (defn create-rss 
@@ -191,7 +205,7 @@
   (let [count-total (count (list-files :posts))
         older [:div {:class "pager-left"}
                [:a {:href (str "/latest-posts/" (- page 1) "/")} 
-                "&laquo; Older Entries"]]
+                "&laquo; Older Entries"]] ;
         newer [:div {:class "pager-right"}
                [:a {:href (str "/latest-posts/" (+ page 1) "/")} 
                 "Newer Entries &raquo;"]]]
